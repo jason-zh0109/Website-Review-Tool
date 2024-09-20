@@ -4,13 +4,9 @@ from threading import Thread
 from django.contrib.auth.decorators import login_required
 import requests
 from bs4 import BeautifulSoup
-import uuid
-import json
-import logging
-from django.http import JsonResponse
-
-import time
-from django.http import JsonResponse
+import os
+import pandas as pd
+from django.http import FileResponse, HttpResponse
 import time
 
 REQUEST_TIMEOUT = 20
@@ -73,7 +69,7 @@ class Web_spider():
                             if keyword in text:
                                 print(f'found keyword {keyword} in link {link}')
                                 self.keyword_links.append({'url':link, 'associated_text':keyword})
-                                self.keyword_link_file.write(link + '\n')
+
                     for href_link in soup.find_all('a', href=True):
                         href = href_link['href']
                         text = href_link.get_text()
@@ -116,7 +112,9 @@ class Web_spider():
                 # Check if the link is a valid download link
                 if 'application/' in content_type or 'octet-stream' in content_type:
                     print(f'Valid download link detected: {link}')
-                if response.status_code == 200:
+                    self.handle_download_link(link, link_combo[1], content_type)
+                
+                elif response.status_code == 200:
                     if link.startswith(self.baseurl):
                         self.web_links.put(link_combo)
                         self.counter += 1
@@ -141,6 +139,29 @@ class Web_spider():
                 print(f'counter = {self.counter}')
                 print(f'remaining detected tasks{self.web_links.qsize()}')
 
+    def handle_download_link(self, link, source_link, content_type):
+        # download the file
+        try:
+            response = requests.get(link, stream=True)
+            response.raise_for_status()  # Raise an exception for HTTP errors
+
+            # Extract the filename from the URL
+            filename = link.split('/')[-1]
+            download_path = os.path.join('downloads', filename)
+
+            # Ensure the downloads directory exists
+            os.makedirs(os.path.dirname(download_path), exist_ok=True)
+
+            # Write the file to the downloads directory
+            with open(download_path, 'wb') as file:
+                for chunk in response.iter_content(chunk_size=8192):
+                    file.write(chunk)
+
+            print(f'File downloaded: {download_path}')
+        except Exception as e:
+            # Log the failure to the broken links file
+            self.deal_broken_link(link, source_link, 'download_failed', str(e))
+
     def search_broken_links(self, baseurl):
         self.put_url(baseurl)
         thread_list = list()
@@ -156,6 +177,7 @@ class Web_spider():
         self.web_links.join()
         print(self.keyword_links)
         return self.broken_links
+    
     def search_keyword_links(self, baseurl, keyword):
         keyword_list = keyword.split()
         self.put_keyword(keyword_list)
@@ -173,18 +195,6 @@ class Web_spider():
         self.web_links.join()
         return self.keyword_links
 
-# def process_link(href, source_url):
-#     try:
-#         print(f'Processing link {href} from source {source_url}')
-#         response = requests.get(href)
-#         if response.status_code == 200:
-#             print(f'Link {href} is valid.')
-#         else:
-#             print(f'Link {href} is broken with status code {response.status_code}.')
-#             # Handle broken link (e.g., log it, save it to a file, etc.)
-#     except Exception as e:
-#         print(f'Error processing link {href}: {str(e)}')
-
 @login_required
 def search_link(request):
     if request.method == 'POST':
@@ -194,7 +204,6 @@ def search_link(request):
         return render(request, 'results.html', {'results': results})
     return render(request, 'search.html')
 
-# assign a job ID to each task
 def search_task(url, keyword):
     
     # Initialize Web_spider instance
@@ -204,4 +213,27 @@ def search_task(url, keyword):
         results = web_spider.search_keyword_links(url, keyword)
     else:
         results = web_spider.search_broken_links(url)
+    download_table(results)
     return results
+def download_table(results):
+    df = pd.DataFrame(results)
+    filename = 'output.xlsx'
+    if not os.path.exists('download_table'):
+        os.mkdir('download_table')
+    path = os.path.join('download_table', filename)
+    output = pd.ExcelWriter(path, engine='openpyxl')
+    df.to_excel(output, index=False)
+    output.close()
+
+def download(request):
+    # Specify the path to the existing Excel file
+    file_path = os.path.join('download_table', 'output.xlsx')
+    print(file_path)
+    # Check if the file exists
+    if os.path.exists(file_path):
+        # Open the file in binary mode and send it as a response
+        response = FileResponse(open(file_path, 'rb'), as_attachment=True)
+        response['Content-Disposition'] = 'attachment; filename="output.xlsx"'
+        return response
+    else:
+        return HttpResponse("File not found.", status=404)
