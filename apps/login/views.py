@@ -14,7 +14,9 @@ from django.utils.encoding import force_bytes, force_str
 from django.core.mail import EmailMessage
 from .tokens import account_activation_token
 from django.contrib.auth import get_user_model
+from smtplib import SMTPException
 from django.utils.safestring import mark_safe
+
 def login_user(request):
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
