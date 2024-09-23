@@ -6,7 +6,6 @@
     <title>Login</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -30,16 +29,16 @@
             height: auto;
         }
         .image {
-            background-color: #ffffff;
-            margin: 20px auto;
-            text-align: center;
+            background-color: #ffffff; 
+            margin: 20px auto; 
+            text-align: center; 
         }
 
         .image img {
-            display: block;
-            margin: 0 auto;
-            max-width: 300px;
-            height: auto;
+            display: block; 
+            margin: 0 auto; 
+            max-width: 300px; 
+            height: auto; 
         }
 
         .image a {
@@ -47,7 +46,7 @@
             text-decoration: none;
             font-weight: thin;
         }
-
+        
         .image a:hover {
             text-decoration: underline;
         }
@@ -60,20 +59,20 @@
         form {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
-            width: 400px;
-            margin: 0 auto;
+            align-items: flex-start; 
+            width: 400px; 
+            margin: 0 auto; 
         }
         input[type="text"], input[type="password"] {
-            width: 100%;
+            width: 100%; 
             margin-bottom: 5px;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
         label {
-            margin-bottom: 5px;
-            align-self: flex-start;
+            margin-bottom: 5px; 
+            align-self: flex-start; 
         }
         button {
             width: 200px;
@@ -86,17 +85,17 @@
             margin: 20px auto 10px; /* Adjusted to reduce the space between button and footer */
             transition: background-color 0.3s;
             cursor: pointer;
-            font-size: 25px;
+            font-size: 25px; 
             gap: 30px;
             align-self: center;
         }
         /* Hover effect */
         button:hover {
-            background-color: #0066cc;
+            background-color: #0066cc; 
         }
         .checkbox {
             display: flex;
-            align-items: center;
+            align-items: center; 
             gap: 5px;
             margin: 10px 0;
             width: 100%;
@@ -114,26 +113,6 @@
             text-decoration: underline;
             color: #0066cc;
         }
-        .messages {
-            display: flex;
-            justify-content: center;
-        }
-        .alert {
-            width: 30%;
-            margin: 10px auto;
-            position: relative;
-        }
-        .btn-close {
-            position: absolute;
-            top: 0px;
-            right: 10px;
-            width: 15px;
-            height: 15px;
-            font-size: 10px;
-        }
-        .required {
-            color: red;
-        }
     </style>
 </head>
 <body>
@@ -150,16 +129,12 @@
         <p>First time using this tool? Please watch our <a href="#">Quick Start Video</a>.</p>
     </div>
 
-    <div class="alert"></div>
-        {% include 'message.html' %}
-    </div>
-
     <form method="post">
         {% csrf_token %}
-        <label for="username">Username<span class="required">*</span></label>
-        <input type="text" id="username" name="username" class="username" placeholder="Click to Enter" required>
+        <label for="userName">Userame</label>
+        <input type="text" id="userName" name="userName" class="userName" placeholder="Click to Enter" required>
 
-        <label for="password">Password<span class="required">*</span></label>
+        <label for="password">Password</label>
         <input type="password" id="password" name="password" class="password" placeholder="Click to Enter" required>
 
         <div class="checkbox">
@@ -169,36 +144,36 @@
 
         <button type="submit">LOGIN</button>
     </form>
-
-
+    {% if form.errors %}
+        <p style="color:red;">Invalid username or password. Please try again.</p>
+    {% endif %}
     <div class="footer">
-        <a href="{% url 'signup' %}">Not a user? Register now</a>
-        <a href="{% url 'forgot_password' %}">Forgot Password?</a>
+        <a href="#">Not a user? Register now</a>
+        <a href="#">Forgot Password?</a>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        var username = document.querySelector('.username');
+        var userName = document.querySelector('.userName');
         var pwd = document.querySelector('.password');
         var chk = document.querySelector('.check');
         var btn = document.querySelector('button');
-
+    
         // If "Remember Password" is checked when clicking login, the password is stored; Otherwise, clear the password
         btn.onclick = function () {
             if (chk.checked) {
         // Memorize data
-                window.localStorage.setItem('username', username.value);
+                window.localStorage.setItem('userName', userName.value);
                 window.localStorage.setItem('pwd', pwd.value);
             } else {
         // Clear data
-                window.localStorage.removeItem('username');
+                window.localStorage.removeItem('userName');
                 window.localStorage.removeItem('pwd');
             }
         }
         // The next time you log in, if there is any data recorded, fill it directly
         window.onload = function () {
-            if(window.localStorage.getItem('username')) {
-                username.value = window.localStorage.getItem('username');
+            if(window.localStorage.getItem('userName')) {
+                userName.value = window.localStorage.getItem('userName');
                 pwd.value = window.localStorage.getItem('pwd');
                 chk.checked = true;
             }
@@ -206,5 +181,3 @@
     </script>
 </body>
 </html>
-
-
