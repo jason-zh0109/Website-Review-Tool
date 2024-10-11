@@ -171,6 +171,7 @@ def forgot_password(request):
     if request.method == 'POST':
         form = VerifyUserForm(request.POST)
         if form.is_valid():
+            user_name = form.cleaned_data.get('username')
             user_email = form.cleaned_data.get('email')
             found_user = get_user_model().objects.filter(Q(email=user_email)).first()
             if found_user:
