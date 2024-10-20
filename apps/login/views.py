@@ -61,6 +61,7 @@ def check_login(request):
 
 def index(request):
     return render(request, 'index.html')
+
 def reg_request_email(request, user, email):
     subject = "New User Registration Request"
     message = render_to_string("registration_request.html", {
@@ -175,8 +176,9 @@ def forgot_password(request):
     if request.method == 'POST':
         form = VerifyUserForm(request.POST)
         if form.is_valid():
+            user_username = form.cleaned_data.get('username')
             user_email = form.cleaned_data.get('email')
-            found_user = get_user_model().objects.filter(Q(email=user_email)).first()
+            found_user = get_user_model().objects.filter(Q(username=user_username) & Q(email=user_email)).first()
             if found_user:
                 reset_password_email(request, found_user, found_user.email)
                 return redirect('index')
