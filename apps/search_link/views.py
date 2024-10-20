@@ -338,7 +338,7 @@ def download(request):
     # check filename is in whitelist
     filename = request.GET.get('filename')
     if not filename or filename not in WHITELIST:
-        return HttpResponse("Invalid file request", status=400)
+        return HttpResponse("Invalid File Request", status=400)
     
     file_path = os.path.join(BASE_DIR, filename)
     canonical_path = os.path.abspath(file_path)
