@@ -325,18 +325,31 @@ def download_table(results, table_name):
         for col, width in column_widths.items():
             worksheet.column_dimensions[col].width = width
 
-    # output.close()
+# whitelisted files
+WHITELIST = [
+    'output.xlsx',
+    'uom_sign_links.xlsx'
+    ]
 
+# directory of result xlsx files
+BASE_DIR = 'download_table'
 
 def download(request):
+    # check filename is in whitelist
     filename = request.GET.get('filename')
-    # Specify the path to the existing Excel file
-    file_path = os.path.join('download_table', filename)
-    print(file_path)
-    # Check if the file exists
-    if os.path.exists(file_path):
+    if not filename or filename not in WHITELIST:
+        return HttpResponse("Invalid file request", status=400)
+    
+    file_path = os.path.join(BASE_DIR, filename)
+    canonical_path = os.path.abspath(file_path)
+
+    # check canonicalised path starts with expected base dir
+    if not canonical_path.startswith(os.path.abspath(BASE_DIR)):
+        return HttpResponse("Forbidden", status=403)
+    
+    if os.path.exists(canonical_path):
         # Open the file in binary mode and send it as a response
-        response = FileResponse(open(file_path, 'rb'), as_attachment=True)
+        response = FileResponse(open(canonical_path, 'rb'), as_attachment=True)
         response['Content-Disposition'] = f'attachment; filename={filename}'
         return response
     else:
