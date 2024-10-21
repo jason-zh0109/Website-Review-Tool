@@ -5,10 +5,11 @@ from multiprocessing import JoinableQueue as Queue
 from threading import Thread
 from django.contrib.auth.decorators import login_required
 import requests
-
+from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 import os
 import pandas as pd
+import threading
 from django.urls import reverse
 from django.http import FileResponse, HttpResponse
 from fnmatch import *
@@ -291,7 +292,9 @@ def search_link(request):
             show_source_link = True
         request.session['results'] = result
         request.session['token'] = token
+        request.session['expiration'] = (datetime.now() + timedelta(minutes=0.16)).isoformat()
         request.session['show_source_link'] = show_source_link
+
         return redirect('show_results')
     return render(request, 'search.html')
 
@@ -315,6 +318,7 @@ def search_task(url, keyword, user):
 
     token = download_token.make_token(user)
     print(token, "token")
+
     download_table(results, "1"+token+".xlsx")
     download_table(uom_result, "2"+token+".xlsx")
     # return results
@@ -337,6 +341,7 @@ def download_table(results, table_name):
         }
         for col, width in column_widths.items():
             worksheet.column_dimensions[col].width = width
+    delete_file_after_timeout(path, timeout=10)
 
 # whitelisted files
 WHITELIST = [
@@ -346,18 +351,33 @@ WHITELIST = [
 
 # directory of result xlsx files
 BASE_DIR = 'download_table'
+# Function to delete the file after a timeout
+def delete_file_after_timeout(file_path, timeout):
+    # Wait for the timeout (in seconds) and then delete the file
+    def delete_file():
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            print(f"File {file_path} deleted after timeout")
+
+    timer = threading.Timer(timeout, delete_file)
+    timer.start()
 @login_required
 def download(request):
     # check filename is in whitelist
+    expiration_time = request.session.get('expiration')
+
     type = request.GET.get('type')
     token = request.GET.get('token')
+    filename = type + token + ".xlsx"
     if not type or not token:
         return HttpResponseBadRequest("Missing required parameters: filename and token")
     # specify file type
-    filename = type+token+".xlsx"
+
     print(filename)
     file_path = os.path.join('download_table', filename)
     print(file_path)
+    if not expiration_time or datetime.fromisoformat(expiration_time) < datetime.now():
+        return HttpResponseBadRequest("Download link has expired")
     # Check if the file exists
     if os.path.exists(file_path):
         # Open the file in binary mode and send it as a response
