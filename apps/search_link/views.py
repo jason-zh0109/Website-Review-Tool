@@ -371,7 +371,7 @@ def download(request):
         response = FileResponse(file_in_memory)
         # response = FileResponse(open(file_path, 'rb'), as_attachment=True)
         response['Content-Disposition'] = f'attachment; filename={filename}'
-        os.remove(file_path)
+        # os.remove(file_path)
 
         return response
     else:
