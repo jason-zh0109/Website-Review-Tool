@@ -343,14 +343,9 @@ def download_table(results, table_name):
             worksheet.column_dimensions[col].width = width
     delete_file_after_timeout(path, timeout=10)
 
-# whitelisted files
-WHITELIST = [
-    'output.xlsx',
-    'uom_sign_links.xlsx'
-    ]
-
 # directory of result xlsx files
 BASE_DIR = 'download_table'
+
 # Function to delete the file after a timeout
 def delete_file_after_timeout(file_path, timeout):
     # Wait for the timeout (in seconds) and then delete the file
