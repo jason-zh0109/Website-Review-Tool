@@ -5,13 +5,14 @@ from multiprocessing import JoinableQueue as Queue
 from threading import Thread
 from django.contrib.auth.decorators import login_required
 import requests
+
 from bs4 import BeautifulSoup
 import os
 import pandas as pd
 from django.urls import reverse
 from django.http import FileResponse, HttpResponse
 from fnmatch import *
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 import io
 from .models import ExcelFile
@@ -350,6 +351,8 @@ def download(request):
     # check filename is in whitelist
     type = request.GET.get('type')
     token = request.GET.get('token')
+    if not type or not token:
+        return HttpResponseBadRequest("Missing required parameters: filename and token")
     # specify file type
     filename = type+token+".xlsx"
     print(filename)
