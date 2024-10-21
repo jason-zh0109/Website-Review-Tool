@@ -5,3 +5,4 @@ from django.contrib.auth.models import AbstractUser
 class User(models.Model):
     username = models.CharField('Username', max_length=50)
     password = models.CharField('Password', max_length=16)
+

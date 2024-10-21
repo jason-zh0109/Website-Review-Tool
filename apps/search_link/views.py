@@ -1,17 +1,20 @@
 from fnmatch import fnmatch
-
+from .tokens import download_token
 from django.shortcuts import render, redirect
 from multiprocessing import JoinableQueue as Queue
 from threading import Thread
 from django.contrib.auth.decorators import login_required
 import requests
+
 from bs4 import BeautifulSoup
 import os
 import pandas as pd
 from django.urls import reverse
-from django.http import FileResponse, HttpResponse
 from fnmatch import *
-
+from django.http import FileResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseForbidden
+from django.shortcuts import get_object_or_404
+import io
+from .models import ExcelFile
 REQUEST_TIMEOUT = 20
 WILDCARD = 1
 SPECIFIED_TEXT = 0
@@ -168,8 +171,9 @@ class Web_spider():
 
                 # Check if the link is a valid download link
                 if 'application/' in content_type or 'octet-stream' in content_type:
-                    print(f'Valid download link detected: {link}')
-                    self.handle_download_link(link, link_combo[1], content_type)
+                    pass
+                    # print(f'Valid download link detected: {link}')
+                    # self.handle_download_link(link, link_combo[1], content_type)
 
                 elif response.status_code == 200:
                     if link.startswith(self.baseurl):
@@ -277,24 +281,28 @@ def search_link(request):
     if request.method == 'POST':
         url = request.POST.get('url')
         keyword = request.POST.get('specifiedText')  # Fetch the keyword if it's provided
-        result = search_task(url, keyword)
+        # get user
+        user = request.user
+        result, token = search_task(url, keyword, user)
         if keyword:
             show_source_link = False
         else:
             show_source_link = True
         request.session['results'] = result
+        request.session['token'] = token
         request.session['show_source_link'] = show_source_link
         return redirect('show_results')
     return render(request, 'search.html')
 
-
+@login_required
 def show_results(request):
     results = request.session.get('results')
     show_source_link = request.session.get('show_source_link')
-    return render(request, 'results.html', {'results': results, 'show_source_link': show_source_link})
+    token = request.session.get('token')
+    return render(request, 'results.html', {'results': results, 'show_source_link': show_source_link, 'token':token})
 
 
-def search_task(url, keyword):
+def search_task(url, keyword, user):
     # Initialize Web_spider instance
     web_spider = Web_spider()
 
@@ -303,9 +311,13 @@ def search_task(url, keyword):
     else:
         results, uom_result = web_spider.search_broken_links(url)
     print(uom_result, "uom result link")
-    download_table(results, 'output.xlsx')
-    download_table(uom_result, 'uom_sign_links.xlsx')
-    return results
+
+    token = download_token.make_token(user)
+    print(token, "token")
+    download_table(results, "1"+token+".xlsx")
+    download_table(uom_result, "2"+token+".xlsx")
+    # return results
+    return [results, token]
 
 
 def download_table(results, table_name):
@@ -325,32 +337,38 @@ def download_table(results, table_name):
         for col, width in column_widths.items():
             worksheet.column_dimensions[col].width = width
 
-# whitelisted files
-WHITELIST = [
-    'output.xlsx',
-    'uom_sign_links.xlsx'
-    ]
-
 # directory of result xlsx files
 BASE_DIR = 'download_table'
 
+@login_required
 def download(request):
-    # check filename is in whitelist
-    filename = request.GET.get('filename')
-    if not filename or filename not in WHITELIST:
-        return HttpResponse("Invalid File Request", status=400)
-    
-    file_path = os.path.join(BASE_DIR, filename)
-    canonical_path = os.path.abspath(file_path)
+    type = request.GET.get('type')
+    token = request.GET.get('token')
 
-    # check canonicalised path starts with expected base dir
-    if not canonical_path.startswith(os.path.abspath(BASE_DIR)):
-        return HttpResponse("Forbidden", status=403)
+    if not type or not token:
+        return HttpResponseBadRequest('Invalid File Request')
     
-    if os.path.exists(canonical_path):
+    filename = type + token + ".xlsx"
+    file_path = os.path.join(BASE_DIR, filename)
+    canonicalized_path = os.path.abspath(file_path)
+    
+    # check canonicalised path starts with expected base dir
+    if not canonicalized_path.startswith(os.path.abspath(BASE_DIR)):
+        return HttpResponseForbidden("Forbidden")
+
+    # Check if the file exists
+    if os.path.exists(file_path):
         # Open the file in binary mode and send it as a response
-        response = FileResponse(open(canonical_path, 'rb'), as_attachment=True)
+        with open(file_path, 'rb') as file:
+            file_data = file.read()
+
+        # Create a file-like object in memory
+        file_in_memory = io.BytesIO(file_data)
+
+        # Serve the file from memory
+        response = FileResponse(file_in_memory)
         response['Content-Disposition'] = f'attachment; filename={filename}'
+
         return response
     else:
-        return HttpResponse("File not found.", status=404)
+        return HttpResponseNotFound("File not found.")
