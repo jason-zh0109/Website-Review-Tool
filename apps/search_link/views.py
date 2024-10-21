@@ -171,8 +171,9 @@ class Web_spider():
 
                 # Check if the link is a valid download link
                 if 'application/' in content_type or 'octet-stream' in content_type:
-                    print(f'Valid download link detected: {link}')
-                    self.handle_download_link(link, link_combo[1], content_type)
+                    pass
+                    # print(f'Valid download link detected: {link}')
+                    # self.handle_download_link(link, link_combo[1], content_type)
 
                 elif response.status_code == 200:
                     if link.startswith(self.baseurl):
