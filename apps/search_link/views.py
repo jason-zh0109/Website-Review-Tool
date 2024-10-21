@@ -10,9 +10,8 @@ from bs4 import BeautifulSoup
 import os
 import pandas as pd
 from django.urls import reverse
-from django.http import FileResponse, HttpResponse
 from fnmatch import *
-from django.http import FileResponse, Http404, HttpResponseBadRequest
+from django.http import FileResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 import io
 from .models import ExcelFile
@@ -338,26 +337,25 @@ def download_table(results, table_name):
         for col, width in column_widths.items():
             worksheet.column_dimensions[col].width = width
 
-# whitelisted files
-WHITELIST = [
-    'output.xlsx',
-    'uom_sign_links.xlsx'
-    ]
-
 # directory of result xlsx files
 BASE_DIR = 'download_table'
+
 @login_required
 def download(request):
-    # check filename is in whitelist
     type = request.GET.get('type')
     token = request.GET.get('token')
+
     if not type or not token:
-        return HttpResponseBadRequest("Missing required parameters: filename and token")
-    # specify file type
-    filename = type+token+".xlsx"
-    print(filename)
-    file_path = os.path.join('download_table', filename)
-    print(file_path)
+        return HttpResponseBadRequest('Invalid File Request')
+    
+    filename = type + token + ".xlsx"
+    file_path = os.path.join(BASE_DIR, filename)
+    canonicalized_path = os.path.abspath(file_path)
+    
+    # check canonicalised path starts with expected base dir
+    if not canonicalized_path.startswith(os.path.abspath(BASE_DIR)):
+        return HttpResponseForbidden("Forbidden")
+
     # Check if the file exists
     if os.path.exists(file_path):
         # Open the file in binary mode and send it as a response
@@ -369,27 +367,8 @@ def download(request):
 
         # Serve the file from memory
         response = FileResponse(file_in_memory)
-        # response = FileResponse(open(file_path, 'rb'), as_attachment=True)
         response['Content-Disposition'] = f'attachment; filename={filename}'
-        # os.remove(file_path)
 
         return response
     else:
-        return HttpResponse("File not found.", status=404)
-    # if not filename or filename not in WHITELIST:
-    #     return HttpResponse("Invalid File Request", status=400)
-    #
-    # file_path = os.path.join(BASE_DIR, filename)
-    # canonical_path = os.path.abspath(file_path)
-    #
-    # # check canonicalised path starts with expected base dir
-    # if not canonical_path.startswith(os.path.abspath(BASE_DIR)):
-    #     return HttpResponse("Forbidden", status=403)
-    #
-    # if os.path.exists(canonical_path):
-    #     # Open the file in binary mode and send it as a response
-    #     response = FileResponse(open(canonical_path, 'rb'), as_attachment=True)
-    #     response['Content-Disposition'] = f'attachment; filename={filename}'
-    #     return response
-    # else:
-    #     return HttpResponse("File not found.", status=404)
+        return HttpResponseNotFound("File not found.")
