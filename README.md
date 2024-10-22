@@ -117,7 +117,7 @@ Start the Django development server:
 ```bash
 python manage.py runserver
 ```
-The Django server should be running at [<http://localhost:8000.>](http://localhost:8000)
+The Django server should be running at [<http://localhost:8000>](http://localhost:8000).
 
 ### 6. Access the Application
 
