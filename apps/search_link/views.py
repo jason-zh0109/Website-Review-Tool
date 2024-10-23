@@ -202,29 +202,6 @@ class Web_spider():
                 print(f'counter = {self.counter}')
                 print(f'remaining detected tasks{self.web_links.qsize()}')
 
-    def handle_download_link(self, link, source_link, content_type):
-        # download the file
-        try:
-            response = requests.get(link, stream=True)
-            response.raise_for_status()  # Raise an exception for HTTP errors
-
-            # Extract the filename from the URL
-            filename = link.split('/')[-1]
-            download_path = os.path.join('downloads', filename)
-
-            # Ensure the downloads directory exists
-            os.makedirs(os.path.dirname(download_path), exist_ok=True)
-
-            # Write the file to the downloads directory
-            with open(download_path, 'wb') as file:
-                for chunk in response.iter_content(chunk_size=8192):
-                    file.write(chunk)
-
-            print(f'File downloaded: {download_path}')
-        except Exception as e:
-            # Log the failure to the broken links file
-            self.deal_broken_link(link, source_link, 'download_failed', str(e))
-
     def search_broken_links(self, baseurl):
         self.put_url(baseurl)
         thread_list = list()

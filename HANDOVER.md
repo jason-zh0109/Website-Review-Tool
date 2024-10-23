@@ -18,43 +18,29 @@
 >
 >  - Note down the database endpoint, username, password, and database name, as these will be required during deployment.
 >
->    
+>- ##### Set Up IAM Users
 >
->- **Set Up IAM Users:**
+>  ##### Create User Groups and Add Permissions
 >
->![1729655981964](C:\Users\安库拉~1\AppData\Local\Temp\1729655981964.png)
+>  - **Attach Policies**:
+>    - **AdministratorAccess**
+>    - **AdministratorAccess-AWSElasticBeanstalk**
+>    - **AmazonEC2FullAccess**
+>    - **AmazonS3FullAccess**
+>  - **Create Inline Policies**:
+>    - **Elastic Beanstalk Service**:
+>      - **Action**: `CreateApplication`
+>    - **S3 Service**:
+>      - **Action**: `GetBucketOwnershipControls`
 >
->![1729656027183](C:\Users\安库拉~1\AppData\Local\Temp\1729656027183.png)	
+>  ##### Create Users and Add Users to the User Group
 >
->1. - ##### Create User Groups and Add Permissions
->
->     ##### Attach Policies:
->
->     - **AdministratorAccess**
->     - **AdministratorAccess-AWSElasticBeanstalk**
->     - **AmazonEC2FullAccess**
->     - **AmazonS3FullAccess**
->
->     **Create Inline Policies:**
->
->     - **Elastic Beanstalk Service**:
->       - **Action**: `CreateApplication`
->     - **S3 Service**:
->       - **Action**: `GetBucketOwnershipControls`
->
->![1729656054386](C:\Users\安库拉~1\AppData\Local\Temp\1729656054386.png)
->
-> Create users and add users to the user group with AdministratorAccess for the user you created.
->
->![1729656474044](C:\Users\安库拉~1\AppData\Local\Temp\1729656474044.png)
->
->Create access keys for users under Security credentials ![1729656599029](C:\Users\安库拉~1\AppData\Local\Temp\1729656599029.png)
->
->Download csv file that would be used for access eb console
->
->![1729656653633](C:\Users\安库拉~1\AppData\Local\Temp\1729656653633.png)
->
->
+>  - **Create Users**:
+>    - Create users and add them to the user group with **AdministratorAccess** for the user you created.
+>  - **Create Access Keys**:
+>    - Create access keys for users under **Security credentials**.
+>  - **Download CSV File**:
+>    - Download the CSV file that would be used for accessing the EB console.
 >
 >#### 2. **Create a Database in RDS (If Not Already Done)**
 >
