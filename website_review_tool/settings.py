@@ -27,6 +27,18 @@ SECRET_KEY = 'django-insecure-9m!jf+5qd0_z@4ot!d82mucd3xk!(klc*l!rbb@*$w$)vx$#qs
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+"""
+Ensure HTTPS is available before enabling these settings
+If "ERROR You're accessing the development server over HTTPS, but it only supports HTTP." appears, clear the cache of the browser
+It is advised to have separate settings.py files for local and production to ensure the above error does not occur locally
+"""
+
+# SECURE_SSL_REDIRECT = True
+
+# SESSION_COOKIE_SECURE = True
+
+# CSRF_COOKIE_SECURE = True
+
 ALLOWED_HOSTS = ['*']
 
 
