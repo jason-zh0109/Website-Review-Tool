@@ -20,7 +20,7 @@ We have successfully implemented an auto-deployment pipeline for our website rev
 
 - ##### Set Up IAM Users
 
-  ##### Create User Groups and Add Permissions
+  ###### Create User Groups and Add Permissions
 
   - **Attach Policies**:
 
