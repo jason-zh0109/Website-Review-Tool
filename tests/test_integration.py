@@ -1,84 +1,66 @@
-# from selenium import webdriver
 # from django.contrib.auth.models import User
-# from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+# from django.test import LiveServerTestCase
 # from django.urls import reverse
-#
+# from selenium import webdriver
 # from selenium.webdriver.common.by import By
+# from selenium.webdriver.common.action_chains import ActionChains
+# from selenium.webdriver.common.keys import Keys
 # import time
 #
-# from selenium.webdriver.support import expected_conditions as EC
-# from selenium.webdriver.support.ui import WebDriverWait
 #
-#
-# class TestLoginPage(StaticLiveServerTestCase):
+# class CopyLinkAfterLoginTest(LiveServerTestCase):
 #     def setUp(self):
-#         self.browser = webdriver.Chrome()
-#         self.credentials = {
-#             'username': 'testuser',
-#             'password': 'secret'}
-#         User.objects.create_user(**self.credentials)
+#         # Create a test user
+#         self.username = 'testuser'
+#         self.password = 'testpassword'
+#         self.user = User.objects.create_user(username=self.username, password=self.password)
+#
+#         # Set up Selenium WebDriver
+#         self.driver = webdriver.Chrome()  # or use webdriver.Firefox() for Firefox
+#         self.driver.implicitly_wait(10)  # Wait for elements to load
+#
 #     def tearDown(self):
-#         self.browser.quit()
+#         # Close the browser after each test
+#         self.driver.quit()
 #
-#     def test_login_page(self):
-#         time.sleep(5)
-#         self.browser.get(self.live_server_url)
-#         self.browser.find_element(By.XPATH, '/html/body/p/a[1]').click()
-#         login_url = self.live_server_url + reverse('login')
-#         time.sleep(5)
-#         self.assertEqual(login_url, self.browser.current_url)
+#     def login(self):
+#         # Go to the login page
+#         login_url = self.live_server_url + reverse('login')  # Replace 'login' with your actual login URL name
+#         self.driver.get(login_url)
 #
-#     def test_search(self):
-#         self.browser.get(self.live_server_url)
-#         self.browser.find_element(By.XPATH, '/html/body/p/a[1]').click()
-#         self.browser.find_element(By.ID, 'username').send_keys('testuser')
-#         self.browser.find_element(By.ID, 'password').send_keys('secret')
-#         self.browser.find_element(By.XPATH, "//button[text()='LOGIN']").click()
-#         try:
-#             WebDriverWait(self.browser, 2).until(EC.url_changes(self.live_server_url + reverse('login')))
-#         except Exception as e:
-#             self.fail(f"Login failed: {e}")
+#         # Enter username and password
+#         self.driver.find_element(By.ID, "username").send_keys(self.username)
+#         self.driver.find_element(By.ID, "password").send_keys(self.password)
 #
-#             # Check if the login was successful by checking the URL
-#         current_url = self.browser.current_url
-#         expected_url = self.live_server_url + reverse('search_link')  # Replace with your expected URL after login
-#         time.sleep(10)
-#         self.assertEqual(current_url, expected_url, "Login failed: URL did not match expected URL")
-#     def test_search_page_redirect(self):
-#         self.browser.get(self.live_server_url)
-#         self.browser.find_element(By.XPATH, '/html/body/p/a[1]').click()
-#         self.browser.find_element(By.ID, 'username').send_keys('testuser')
-#         self.browser.find_element(By.ID, 'password').send_keys('secret')
-#         self.browser.find_element(By.XPATH, "//button[text()='LOGIN']").click()
-#         try:
-#             WebDriverWait(self.browser, 2).until(EC.url_changes(self.live_server_url + reverse('login')))
-#         except Exception as e:
-#             self.fail(f"Login failed: {e}")
+#         # Submit the login form
+#         login_button = self.driver.find_element(By.XPATH, "//button[@type='submit']")
+#         login_button.click()
 #
-#             # Check if the login was successful by checking the URL
-#         current_url = self.browser.current_url
-#         expected_url = self.live_server_url + reverse('search_link')  # Replace with your expected URL after login
-#         self.assertEqual(current_url, expected_url, "Login failed: URL did not match expected URL")
+#     def test_copy_link_to_clipboard_after_login(self):
+#         # Step 1: Log in
+#         self.login()
 #
-#     def test_search_result_redirect(self):
-#         self.browser.get(self.live_server_url)
-#         self.browser.find_element(By.XPATH, '/html/body/p/a[1]').click()
-#         self.browser.find_element(By.ID, 'username').send_keys('testuser')
-#         self.browser.find_element(By.ID, 'password').send_keys('secret')
-#         self.browser.find_element(By.XPATH, "//button[text()='LOGIN']").click()
-#         try:
-#             WebDriverWait(self.browser, 2).until(EC.url_changes(self.live_server_url + reverse('login')))
-#         except Exception as e:
-#             self.fail(f"Login failed: {e}")
+#         # Step 2: Navigate to the search results page after login
+#         url = self.live_server_url + reverse('show_results')  # Replace with your actual view name
+#         self.driver.get(url)
 #
-#             # Check if the login was successful by checking the URL
-#         current_url = self.browser.current_url
-#         expected_url = self.live_server_url + reverse('search_link')  # Replace with your expected URL after login
-#         self.assertEqual(current_url, expected_url, "Login failed: URL did not match expected URL")
-#         self.browser.find_element(By.ID, 'url').send_keys('invalid link')
-#         self.browser.find_element(By.ID, 'searchLinks').click()
-#         time.sleep(2)
-#         current_url = self.browser.current_url
-#         expected_url = self.live_server_url + reverse('show_results')
-#         self.assertEqual(current_url, expected_url, "Login failed: URL did not match expected URL")
+#         # Step 3: Find the "Copy Link" button and click it
+#         copy_button = self.driver.find_element(By.XPATH, "//button[@onclick=\"copyToClipboard('link1')\"]")
+#         copy_button.click()
 #
+#         # Step 4: Wait for the clipboard to be updated
+#         time.sleep(1)  # Adjust as needed
+#
+#         # Step 5: Open a temporary input element and paste the clipboard contents
+#         actions = ActionChains(self.driver)
+#         actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
+#
+#         # Step 6: Retrieve the copied URL from the href of the link
+#         link_element = self.driver.find_element(By.ID, "link1")
+#         link_url = link_element.get_attribute("href")
+#
+#         # Step 7: Verify if clipboard content matches the expected URL
+#         pasted_content = self.driver.find_element(By.TAG_NAME, "body").text
+#         self.assertEqual(pasted_content, link_url)
+#
+#         print("Test passed: Link copied to clipboard successfully after login")
