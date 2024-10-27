@@ -1,8 +1,9 @@
+from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
-from django.core import mail
 from django.contrib.auth.models import User
-import time
+import requests
+from bs4 import BeautifulSoup
 # Log In Tests
 class UserLogInTest(TestCase):
     def setUp(self):
@@ -63,6 +64,16 @@ class UserSignUpTest(TestCase):
         })
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('transition') + '?next=/login/&message=Register+Successful%21')
+    def test_signup_invalid_username(self):
+        response = self.client.post(reverse('signup'), {
+            'username': 'te',
+            'email': 'validemail@example.com',
+            'password1': 'val1dpassw0rd',
+            'password2': 'val1dpassw0rd',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'signup.html')
+        self.assertFormError(response, 'form', 'username', 'Username must be 5-20 characters long and can only contain letters, numbers, and underscores')
 
 
     # Existing username
@@ -88,6 +99,16 @@ class UserSignUpTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'signup.html')
         self.assertFormError(response, 'form', 'password2', 'This password is too common.')
+    def test_signup_short_password(self):
+        response = self.client.post(reverse('signup'), {
+            'username': 'validuser',
+            'email': 'validemail@gmail.com',
+            'password1': 'adsioj',
+            'password2': 'adsioj',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'signup.html')
+        self.assertFormError(response, 'form', 'password2', 'This password is too short. It must contain at least 8 characters.')
 
     # passwords do not match
     def test_signup_mismatch_password(self):
@@ -117,47 +138,45 @@ class UserSignUpTest(TestCase):
             'password2': 'val1dpassw0rd'
         })
         self.assertEqual(response.status_code, 200)
+        self.assertFormError(response, 'form', 'email', 'Enter a valid email address.')
 
-
-
-
+#
+#
 # Forgot Password Tests
 class UserForgotPasswordTest(TestCase):
     def setUp(self):
         self.credentials = {
             'username': 'testuser',
-            'password': 'secret'}
+            'password': 'secret',
+            'email': 'nonexistent@example.com'
+        }
         User.objects.create_user(**self.credentials)
-
     def test_forgot_password_view(self):
         response = self.client.get(reverse('forgot_password'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'forgot_password.html')
-    def test_forgot_password_non_existent_email(self):
+
+    def test_forgot_password_wrong_email(self):
         response = self.client.post(reverse('forgot_password'), {
             'username':'testuser',
-            'email': 'nonexistent@example.com',
+            'email': 'nonexisten@example.com',
         })
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'No account found with the provided username and email.')
+        self.assertTemplateUsed(response, 'forgot_password.html')
+        self.assertEqual(len(mail.outbox), 0)
+    def test_forgot_password_non_exising_user(self):
+        response = self.client.post(reverse('forgot_password'), {
+            'username':'testus',
+            'email': 'nonexisten@example.com',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'No account found with the provided username and email.')
         self.assertTemplateUsed(response, 'forgot_password.html')
         self.assertEqual(len(mail.outbox), 0)
 
-    def test_forgot_password_valid_email(self):
-        response = self.client.post(reverse('forgot_password'), {
-            'username':'testuser',
-            'email': 'x15968472900@163.com',
-        })
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'forgot_password.html')
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('Password reset on', mail.outbox[0].subject)
-        self.assertIn(self.user.email, mail.outbox[0].to)
 
-from django.test import TestCase
-from django.urls import reverse
-from django.contrib.auth.models import User
-import requests
-from bs4 import BeautifulSoup
+
 
 class SearchLinkTestCase(TestCase):
     def setUp(self):

@@ -185,7 +185,7 @@ def forgot_password(request):
             else:
                 messages.error(request, f"No account found with the provided username and email.")
         else:
-            messages.error(request, f"Username or password were invalid.")
+            messages.error(request, f"Username or email were invalid.")
     else:
         form = VerifyUserForm()
     return render(request, 'forgot_password.html', {'form': form})
