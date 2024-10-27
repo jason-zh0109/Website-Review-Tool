@@ -1,14 +1,14 @@
-from selenium import webdriver
-from django.contrib.auth.models import User
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.urls import reverse
-
-from selenium.webdriver.common.by import By
-import time
-
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-
+# from selenium import webdriver
+# from django.contrib.auth.models import User
+# from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+# from django.urls import reverse
+#
+# from selenium.webdriver.common.by import By
+# import time
+#
+# from selenium.webdriver.support import expected_conditions as EC
+# from selenium.webdriver.support.ui import WebDriverWait
+#
 #
 # class TestLoginPage(StaticLiveServerTestCase):
 #     def setUp(self):
@@ -21,10 +21,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 #         self.browser.quit()
 #
 #     def test_login_page(self):
+#         time.sleep(5)
 #         self.browser.get(self.live_server_url)
 #         self.browser.find_element(By.XPATH, '/html/body/p/a[1]').click()
 #         login_url = self.live_server_url + reverse('login')
-#         time.sleep(1)
+#         time.sleep(5)
 #         self.assertEqual(login_url, self.browser.current_url)
 #
 #     def test_search(self):
