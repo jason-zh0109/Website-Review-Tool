@@ -269,7 +269,7 @@ def search_link(request):
             show_source_link = True
         request.session['results'] = result
         request.session['token'] = token
-        request.session['expiration'] = (datetime.now() + timedelta(minutes=0.16)).isoformat()
+        request.session['expiration'] = (datetime.now() + timedelta(minutes=10)).isoformat()
         request.session['show_source_link'] = show_source_link
 
         return redirect('show_results')
@@ -318,7 +318,7 @@ def download_table(results, table_name):
         }
         for col, width in column_widths.items():
             worksheet.column_dimensions[col].width = width
-    delete_file_after_timeout(path, timeout=10)
+    delete_file_after_timeout(path, timeout=600)
 
 # directory of result xlsx files
 BASE_DIR = 'download_table'
