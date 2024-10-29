@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'login',
     'apps.search_link.apps.SearchLinkConfig',
+    'admin_honeypot'
 ]
 
 MIDDLEWARE = [
@@ -109,6 +110,9 @@ DATABASES = {
         'PASSWORD': 'nbmy43602',
         'HOST': 'awseb-e-4nrupvyuza-stack-awsebrdsdatabase-933mrjmzrme0.cbcy80um6q8r.ap-southeast-2.rds.amazonaws.com',
         'PORT': 3306,
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
         'TEST': {
             'NAME': 'test_ebdb',
             'CREATE_DB': True,
