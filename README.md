@@ -40,7 +40,6 @@ To use the web application, simply click on the provided link: [Website Review T
 ### 2. User Registration and Login
 - Register as a user to access public websites.
 - UoM-specific and restricted content will require you to have a valid UoM account.
-- Use Okta Verify for secure login when accessing UoM-restricted pages.
 
 ## Repository Structure
 
