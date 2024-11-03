@@ -7,5 +7,4 @@ class DownloadLinkTokenGenerator(PasswordResetTokenGenerator):
             six.text_type(user.pk) + six.text_type(timestamp)  + six.text_type(user.is_active)
         )
 
-# reset_password_token = PasswordResetTokenGenerator()
 download_token = DownloadLinkTokenGenerator()

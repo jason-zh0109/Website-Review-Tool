@@ -1,7 +1,4 @@
 from django.shortcuts import render, redirect
-from django.http import HttpRequest
-from login.models import User
-from django.http import JsonResponse
 from .forms import SignUpForm, VerifyUserForm, ResetPasswordForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
@@ -62,11 +59,6 @@ def check_login(request):
 def index(request):
     return render(request, 'index.html')
 
-def reg_request_email(request, user, email):
-    subject = "New User Registration Request"
-    message = render_to_string("registration_request.html", {
-
-    })
 # Send email to the admin to approve the registration request
 def reg_request_email(request, user, email):
     subject = "New User Registration Request"

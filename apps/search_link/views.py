@@ -1,4 +1,3 @@
-from fnmatch import fnmatch
 from .tokens import download_token
 from django.shortcuts import render, redirect
 from multiprocessing import JoinableQueue as Queue
@@ -10,11 +9,8 @@ from bs4 import BeautifulSoup
 import os
 import pandas as pd
 import threading
-from django.urls import reverse
-from django.http import FileResponse, HttpResponse
 from fnmatch import *
-from django.http import FileResponse, Http404, HttpResponseBadRequest,HttpResponseForbidden,HttpResponseNotFound
-from django.shortcuts import get_object_or_404
+from django.http import FileResponse, HttpResponseBadRequest,HttpResponseForbidden,HttpResponseNotFound
 import io
 from .models import ExcelFile
 REQUEST_TIMEOUT = 20
@@ -28,10 +24,13 @@ def index(request):
 
 class Web_spider():
     def __init__(self):
+        # checked the links already been visited or expected to be visited
         self.visited_or_about_to_visit = set()
+        # used to place the website urls that about to be visited
         self.web_links = Queue()
-        self.baseurl = 'https://sites.research.unimelb.edu.au/research-funding'
+        self.baseurl = ''
         self.UOM_sign_links = list()
+        # used to track how many links remaining to be visited
         self.counter = 0
         self.broken_links = list()
         self.keyword = 'Funding Partners'
@@ -55,7 +54,6 @@ class Web_spider():
 
     def deal_uom_sign_link(self, link, associated_text, source_link):
         if self.is_uom_sign_link(link):
-            print("is uom sign link")
             self.add_uom_sign_link(link, source_link, associated_text)
 
     def add_broken_link(self, link, source_link, associated_text):
@@ -66,7 +64,6 @@ class Web_spider():
         self.add_broken_link(link, source_link, associated_text)
 
     def translate_wildcard(self, pattern):
-        # print(pattern)
         pattern = pattern.replace('%', '*')
         pattern = pattern.replace('_', '?')
         return pattern
@@ -75,24 +72,22 @@ class Web_spider():
 
         while True:
             link_combo = self.web_links.get()
-            print(self.keyword, "this is keywordsss")
             link = link_combo[0]
             try:
-                print(f'getting link {link}')
                 response = requests.get(link, timeout=REQUEST_TIMEOUT)
                 self.visited_or_about_to_visit.add(link)
                 if response.status_code == 200:
+                    # the link doesn't start with the specified prefix
+                    # then no need to check the links derived from its source page
                     if not link.startswith(self.baseurl):
-                        print("skip this link")
                         continue
                     soup = BeautifulSoup(response.content, 'html.parser')
                     if self.keyword_type == SPECIFIED_TEXT:
+                        # check if the keyword matches the source page for the url
                         if self.keyword is not None:
-                            # text = soup.get_text()
                             text = response.text
                             for keyword in self.keyword:
                                 if keyword in text:
-                                    print(f'found keyword {keyword} in link {link}')
                                     urls = [item['url'] for item in self.keyword_links]
                                     # only those cases would dict be added to the keyword_links: 1. new url
                                     # 2. existing url while keyword not the same keyword
@@ -106,11 +101,12 @@ class Web_spider():
                                             self.keyword_links[index]['associated_text'].append(keyword)
                                             # the first keyword is the whole input without splitting
                                     if keyword == self.keyword[0]:
-                                        print("break exit")
+                                        # preventing redundant work and focusing on the most relevant result first
                                         break;
 
 
                     elif self.keyword_type == WILDCARD:
+                        # go through specified wildcard pattern to see if any keyword matches
                         pattern = self.keyword
                         if pattern is not None:
                             text = soup.get_text().split()
@@ -126,8 +122,8 @@ class Web_spider():
                                     if fnmatch(word, pattern):
                                         result = True
                                         break
+                            # found keyword in the link
                             if result:
-                                print(f'found keyword {self.keyword} in link {link}')
                                 self.keyword_links.append({'url': link, 'associated_text': matched_pattern})
 
                     for href_link in soup.find_all('a', href=True):
@@ -139,25 +135,20 @@ class Web_spider():
                                 self.web_links.put([href, link, text])
                                 self.counter += 1
                             else:
-                                print(f'not responsible for checking mails {href}')
-                            print('new links founded', href)
+                                # skip emails as they'll not be checked as website links
+                                pass
                 else:
+                    # 403 status indicates restricted access websites from UOM
+                    # any other status not 200 will be invalid (broken) links
                     if response.status_code == 403:
-                        print("403 link found")
                         self.deal_uom_sign_link(link, link_combo[2], link_combo[1])
                     else:
                         self.deal_broken_link(link, link_combo[1], response.status_code, link_combo[2])
-                    print(
-                        f'status_code:{response.status_code}, broken_link:{link}, page source:{link_combo[1]}, associated_text:{link_combo[2]}')
-
-                    print(f'now the queue size is {self.web_links.qsize()}')
             except Exception as e:
                 print(f'error fetch {link}, {str(e)}')
             finally:
                 self.web_links.task_done()
                 self.counter -= 1
-                print(f'counter = {self.counter}')
-                print(f'remaining links number {self.web_links.qsize()}')
 
     # help save time by filtering out broken link to reduce response time
     def detect_links(self):
@@ -166,7 +157,6 @@ class Web_spider():
             link = link_combo[0]
 
             try:
-                print(f'detecting link {link}')
                 response = requests.get(link, timeout=REQUEST_TIMEOUT)
                 # if not broken, then put back to the queue
                 content_type = response.headers.get('Content-Type', '').lower()
@@ -174,33 +164,27 @@ class Web_spider():
                 # Check if the link is a valid download link
                 if 'application/' in content_type or 'octet-stream' in content_type:
                     pass
-                    # print(f'Valid download link detected: {link}')
-                    # self.handle_download_link(link, link_combo[1], content_type)
 
                 elif response.status_code == 200:
                     if link.startswith(self.baseurl):
                         self.web_links.put(link_combo)
                         self.counter += 1
                     else:
+                        # if the qsize is zero, then no further links to be detected, ends scraping
                         if self.web_links.qsize() == 0:
-                            print('finished')
                             return
                 else:
-                    print(f'status_code:{response.status_code}, broken_link:{link}, page source:{link_combo[1]}')
                     if response.status_code == 403:
                         self.deal_uom_sign_link(link, link_combo[2], link_combo[1])
                     else:
                         self.deal_broken_link(link, link_combo[1], response.status_code, link_combo[2])
 
-                    print(f'now the queue size is {self.web_links.qsize()}')
             except Exception as e:
                 print(f'error fetch {link}, {str(e)}')
             finally:
                 self.web_links.task_done()
                 self.counter -= 1
 
-                print(f'counter = {self.counter}')
-                print(f'remaining detected tasks{self.web_links.qsize()}')
 
     def search_broken_links(self, baseurl):
         self.put_url(baseurl)
@@ -291,10 +275,8 @@ def search_task(url, keyword, user):
         results, uom_result = web_spider.search_keyword_links(url, keyword)
     else:
         results, uom_result = web_spider.search_broken_links(url)
-    print(uom_result, "uom result link")
 
     token = download_token.make_token(user)
-    print(token, "token")
 
     download_table(results, "1"+token+".xlsx")
     download_table(uom_result, "2"+token+".xlsx")
@@ -329,7 +311,6 @@ def delete_file_after_timeout(file_path, timeout):
     def delete_file():
         if os.path.exists(file_path):
             os.remove(file_path)
-            print(f"File {file_path} deleted after timeout")
 
     timer = threading.Timer(timeout, delete_file)
     timer.start()
