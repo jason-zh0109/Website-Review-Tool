@@ -20,4 +20,3 @@ class DownloadLinkTokenGenerator(PasswordResetTokenGenerator):
 account_activation_token = AccountActivationTokenGenerator()
 account_register_token = AccountRegisterTokenGenerator()
 reset_password_token = PasswordResetTokenGenerator()
-# download_token = DownloadLinkTokenGenerator()

@@ -1,4 +1,3 @@
-from fnmatch import fnmatch
 from .tokens import download_token
 from django.shortcuts import render, redirect
 from multiprocessing import JoinableQueue as Queue
@@ -10,11 +9,8 @@ from bs4 import BeautifulSoup
 import os
 import pandas as pd
 import threading
-from django.urls import reverse
-from django.http import FileResponse, HttpResponse
 from fnmatch import *
-from django.http import FileResponse, Http404, HttpResponseBadRequest,HttpResponseForbidden,HttpResponseNotFound
-from django.shortcuts import get_object_or_404
+from django.http import FileResponse, HttpResponseBadRequest,HttpResponseForbidden,HttpResponseNotFound
 import io
 from .models import ExcelFile
 REQUEST_TIMEOUT = 20
@@ -28,10 +24,13 @@ def index(request):
 
 class Web_spider():
     def __init__(self):
+        # checked the links already been visited or expected to be visited
         self.visited_or_about_to_visit = set()
+        # used to place the website urls that about to be visited
         self.web_links = Queue()
-        self.baseurl = 'https://sites.research.unimelb.edu.au/research-funding'
+        self.baseurl = ''
         self.UOM_sign_links = list()
+        # used to note how many links remaining to be visited
         self.counter = 0
         self.broken_links = list()
         self.keyword = 'Funding Partners'
@@ -88,7 +87,6 @@ class Web_spider():
                     soup = BeautifulSoup(response.content, 'html.parser')
                     if self.keyword_type == SPECIFIED_TEXT:
                         if self.keyword is not None:
-                            # text = soup.get_text()
                             text = response.text
                             for keyword in self.keyword:
                                 if keyword in text:
@@ -139,17 +137,15 @@ class Web_spider():
                                 self.web_links.put([href, link, text])
                                 self.counter += 1
                             else:
-                                print(f'not responsible for checking mails {href}')
-                            print('new links founded', href)
+                                # skip emails as they'll not be checked as website links
+                                pass
                 else:
+                    # 403 status indicates restricted access websites from UOM
+                    # any other status not 200 will be invalid (broken) links
                     if response.status_code == 403:
-                        print("403 link found")
                         self.deal_uom_sign_link(link, link_combo[2], link_combo[1])
                     else:
                         self.deal_broken_link(link, link_combo[1], response.status_code, link_combo[2])
-                    print(
-                        f'status_code:{response.status_code}, broken_link:{link}, page source:{link_combo[1]}, associated_text:{link_combo[2]}')
-
                     print(f'now the queue size is {self.web_links.qsize()}')
             except Exception as e:
                 print(f'error fetch {link}, {str(e)}')
