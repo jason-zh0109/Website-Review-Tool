@@ -42,15 +42,20 @@ For now, to use the web application, simply click on the provided link: [Website
 - UoM-specific and restricted content will require you to have a valid UoM account.
 
 ## Repository Structure
+All directories and essential files are shown below.
 
 ```
-├── .ebextensions/
+├── .ebextensions/           # Partial configuration files for aws
 ├── .github/workflows/
 ├── .idea/
-├── .platform/nginx/conf.d/
+├── .platform/nginx/conf.d/timeout.config  # Configures max connection time for nginx server in aws
 ├── apps/
 │   ├── login/               # Handles user authentication, login, and logout
+|   |    ├─  views.py        
+|   │    └── README.md       # Description of what each function does in views.py
 │   └── search_link/         # Handles search functionality and link review
+|   |    ├─  views.py
+|   │    └── README.md       # Description of what each function does in views.py
 ├─docs
 │  ├─Handover/               # including cost estimation, deployment
 │  ├─Product Requirements/   # including archetectural diagram, motivational model, personas, prototypes, user story
@@ -67,6 +72,7 @@ For now, to use the web application, simply click on the provided link: [Website
 ├── Pipfile
 ├── README.md
 ├── manage.py                # Django project management file
+├── dump.rdb
 └── requirements.txt         # Python dependencies for the project
 ```
 
