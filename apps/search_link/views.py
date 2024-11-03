@@ -186,13 +186,11 @@ class Web_spider():
                             print('finished')
                             return
                 else:
-                    print(f'status_code:{response.status_code}, broken_link:{link}, page source:{link_combo[1]}')
                     if response.status_code == 403:
                         self.deal_uom_sign_link(link, link_combo[2], link_combo[1])
                     else:
                         self.deal_broken_link(link, link_combo[1], response.status_code, link_combo[2])
 
-                    print(f'now the queue size is {self.web_links.qsize()}')
             except Exception as e:
                 print(f'error fetch {link}, {str(e)}')
             finally:
