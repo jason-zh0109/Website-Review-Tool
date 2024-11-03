@@ -55,18 +55,18 @@ To use the web application, simply click on the provided link: [Website Review T
 │  ├─Handover/               # including cost estimation, deployment
 │  ├─Product Requirements/   # including archetectural diagram, motivational model, personas, prototypes, user story
 │  └─Technical Specs/        # including description of application layer, database, key algorithms, key class used
-├── resources/ui_component/   # UI components for the frontend
+├── resources/ui_component/  # UI components for the frontend
 ├── static/
 ├── staticfiles/admin/
-├── templates/                # HTML templates for rendering web pages
-├── website_review_tool/       # Main project folder
+├── templates/               # HTML templates for rendering web pages
+├── website_review_tool/     # Main project folder
 │   └── __init__.py
 ├── .gitattributes
 ├── .gitignore
 ├── Pipfile
 ├── README.md
-├── manage.py                 # Django project management file
-└── requirements.txt          # Python dependencies for the project
+├── manage.py                # Django project management file
+└── requirements.txt         # Python dependencies for the project
 ```
 
 
