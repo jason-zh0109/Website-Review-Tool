@@ -1,6 +1,24 @@
 # **Changelog**
 
-## [v2.0] - [Upcoming Release]
+## [v3.0] - [03/11/2024]
+
+### Added
+  - Additional honeypot for the default admin endpoint to enhance security.
+  - New documentation sections in the docs directory, including:
+    - **Handover/:** Including cost estimation and deployment instructions.
+    - **Product Requirements/:** Including architectural diagram, motivational model, personas, prototypes, and user stories.
+    - **User Guide/:** Comprehensive user guide.
+    - **Technical Specs/:** Including description of application layer, database, key algorithms, and key classes used.
+  
+### Updated
+  - Various updates to existing documentation for clarity and completeness.
+
+### Removed
+- UoM logos to avoid any damage to the unimelb's reputation
+
+---
+
+## [v2.0] - [23/10/2024]
 ### Added
 - Unique URLs for file downloads to prevent file overwriting during concurrent searches.
 - Login-required authentication for search results and file downloads to ensure only authorized users can access files.
