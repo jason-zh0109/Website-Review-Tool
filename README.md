@@ -35,7 +35,7 @@ A tool that can review a defined range of UoM websites (internal and external), 
 ## Setup Instructions
 
 ### 1. Access the Web Application
-To use the web application, simply click on the provided link: [Website Review Tool](http://env1.eba-wy6fcmup.ap-southeast-2.elasticbeanstalk.com/). No local setup is required to use this tool as this is a hosted web app, but you can find the local setup instructions at the bottom. 
+For now, to use the web application, simply click on the provided link: [Website Review Tool](http://env2.eba-wy6fcmup.ap-southeast-2.elasticbeanstalk.com/). No local setup is required to use this tool as this is a hosted web app, but you can find the local setup instructions at the bottom. 
 
 ### 2. User Registration and Login
 - Register as a user to access public websites.
