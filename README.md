@@ -54,6 +54,7 @@ To use the web application, simply click on the provided link: [Website Review T
 ├─docs
 │  ├─Handover/               # including cost estimation, deployment
 │  ├─Product Requirements/   # including archetectural diagram, motivational model, personas, prototypes, user story
+|  ├─User Guide/             # including user guide 
 │  └─Technical Specs/        # including description of application layer, database, key algorithms, key class used
 ├── resources/ui_component/  # UI components for the frontend
 ├── static/
