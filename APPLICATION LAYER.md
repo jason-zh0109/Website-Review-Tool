@@ -4,7 +4,7 @@ This README file explains how a Django web application functions, using the arch
 
 ## Architecture Diagram
 
-![img_1.png](img_1.png)
+![django model.png](django model.png)
 
 ## Overview of the Architecture
 
