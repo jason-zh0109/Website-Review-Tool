@@ -553,15 +553,13 @@
 
     <div class="top-bar">
         <div class="logo">
-            <a href="https://www.unimelb.edu.au" target="_blank">
-            <img src="{% static 'images/unimelb.svg' %}" alt="Logo">
-            </a>
+            <img src="{% static 'images/padding.png' %}" alt="padding">
         </div>
 
         <div class="nav-buttons">
             <button onclick="toggleDropdown()"><i class="fas fa-info-circle"></i> Help</button>
             <div id="dropdown" class="dropdown-content">
-                <button>Demo </button>
+                <button onclick="window.location.href='https://youtu.be/JXKi3KQh4Lo';">Demo </button>
 
                 {% if user.is_authenticated %}
                     <form id="logout-form" action="{% url 'logout' %}" method="post">

@@ -27,6 +27,18 @@ SECRET_KEY = 'django-insecure-9m!jf+5qd0_z@4ot!d82mucd3xk!(klc*l!rbb@*$w$)vx$#qs
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+"""
+Ensure HTTPS is available before enabling these settings
+If "ERROR You're accessing the development server over HTTPS, but it only supports HTTP." appears, clear the cache of the browser
+It is advised to have separate settings.py files for local and production to ensure the above error does not occur locally
+"""
+
+# SECURE_SSL_REDIRECT = True
+
+# SESSION_COOKIE_SECURE = True
+
+# CSRF_COOKIE_SECURE = True
+
 ALLOWED_HOSTS = ['*']
 
 
@@ -41,6 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'login',
     'apps.search_link.apps.SearchLinkConfig',
+    'admin_honeypot'
 ]
 
 MIDDLEWARE = [
@@ -97,6 +110,9 @@ DATABASES = {
         'PASSWORD': 'nbmy43602',
         'HOST': 'awseb-e-4nrupvyuza-stack-awsebrdsdatabase-933mrjmzrme0.cbcy80um6q8r.ap-southeast-2.rds.amazonaws.com',
         'PORT': 3306,
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
         'TEST': {
             'NAME': 'test_ebdb',
             'CREATE_DB': True,
@@ -150,11 +166,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR,'static'),
 ]
-STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "static_cdn")
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -181,13 +198,13 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level': 'INFO',
+            'level': 'ERROR',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'debug.log'),
+            'filename': os.path.join(BASE_DIR, 'error.log'),
             'formatter': 'verbose',
         },
         'console': {
-            'level': 'INFO',
+            'level': 'ERROR',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
@@ -195,7 +212,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['file', 'console'],
-            'level': 'INFO',
+            'level': 'ERROR',
             'propagate': True,
         },
     },
